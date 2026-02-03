@@ -1,0 +1,10 @@
+ultralytics
+pandas
+seaborn
+matplotlib
+opencv-python
+fastapi
+numpy
+streamlit
+requests
+pillow

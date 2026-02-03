@@ -20,9 +20,9 @@ if uploaded_file is not None:
         files = {"file": uploaded_file.getvalue()}
 
         response = requests.post(
-            "http://127.0.0.1:8000/predict",
-            files=files
-        )
+        "https://your-fastapi-service.onrender.com/predict",  # Ваш URL
+        files=files
+    )
 
         if response.status_code == 200:
 
@@ -41,5 +41,6 @@ if uploaded_file is not None:
             # Декодируем изображение
             img_bytes = base64.b64decode(data["image"])
             img = Image.open(io.BytesIO(img_bytes))
+
 
             st.image(img, caption="Detection Result")

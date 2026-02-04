@@ -1,8 +1,9 @@
 streamlit
 requests
 Pillow
-fastapi
-uvicorn
-ultralytics
-opencv-python-headless
-numpy
+fastapi==0.111.1
+uvicorn==0.24.0
+ultralytics==8.0.139
+opencv-python-headless==4.8.0.74
+numpy==1.26.5
+python-multipart==0.0.6

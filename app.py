@@ -21,7 +21,7 @@ if uploaded_file is not None:
         files = {"file": uploaded_file.getvalue()}
 
         response = requests.post(
-            "https://YOUR-BACKEND-URL/predict",
+            "https://bone-fracture-detection-hjka.onrender.com",
             files=files
         )
 
@@ -44,3 +44,4 @@ if uploaded_file is not None:
             st.image(img, caption="Detection Result", use_container_width=True)
         else:
             st.warning("Backend error")
+

@@ -1,10 +1,8 @@
-ultralytics
-pandas
-seaborn
-matplotlib
-opencv-python
-fastapi
-numpy
 streamlit
-requests
+ultralytics
+opencv-python-headless
+numpy
 pillow
+requests
+fastapi
+uvicorn

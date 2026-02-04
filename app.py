@@ -1,12 +1,20 @@
 import streamlit as st
-import requests
-import base64
+from ultralytics import YOLO
+import cv2
+import numpy as np
 from PIL import Image
-import io
 
-st.set_page_config(page_title="Bone Fracture Detection", layout="centered")
+st.set_page_config(page_title="Bone Fracture Detection")
 
 st.title("🦴 Bone Fracture Detection")
+
+CONF_THRESHOLD = 0.5
+
+@st.cache_resource
+def load_model():
+    return YOLO("best.pt")
+
+model = load_model()
 
 uploaded_file = st.file_uploader(
     "Upload X-ray image",
@@ -14,33 +22,31 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Original Image", use_container_width=True)
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Original image", use_container_width=True)
 
     if st.button("Analyze"):
+        img = np.array(image)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-        files = {"file": uploaded_file.getvalue()}
+        results = model(img)
+        boxes = results[0].boxes
 
-        response = requests.post(
-            "https://YOUR-BACKEND-URL/predict",
-            files=files
-        )
+        fracture = False
+        confidence = 0.0
 
-        if response.status_code == 200:
-            data = response.json()
+        if boxes is not None and len(boxes) > 0:
+            confidence = float(boxes.conf.max())
+            fracture = confidence >= CONF_THRESHOLD
 
-            fracture = data["fracture"]
-            confidence = data["confidence"]
+        annotated = results[0].plot()
+        annotated = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
 
-            st.subheader("Result")
+        st.subheader("Result")
 
-            if fracture:
-                st.error(f"Fracture detected (confidence: {confidence:.2f})")
-            else:
-                st.success(f"No fracture detected (confidence: {confidence:.2f})")
-
-            img_bytes = base64.b64decode(data["image"])
-            img = Image.open(io.BytesIO(img_bytes))
-
-            st.image(img, caption="Detection Result", use_container_width=True)
+        if fracture:
+            st.error(f"Fracture detected (confidence: {confidence:.2f})")
         else:
-            st.warning("Backend error")
+            st.success(f"No fracture detected (confidence: {confidence:.2f})")
+
+        st.image(annotated, caption="Detection result", use_container_width=True)

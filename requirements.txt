@@ -1,3 +1,8 @@
 streamlit
 requests
 Pillow
+fastapi
+uvicorn
+ultralytics
+opencv-python-headless
+numpy

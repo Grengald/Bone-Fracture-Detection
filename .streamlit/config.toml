@@ -1,7 +1,2 @@
 [server]
-maxUploadSize = 200
-enableCORS = true
-enableXsrfProtection = true
-
-[browser]
-gatherUsageStats = false
+python_version = "3.10"

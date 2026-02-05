@@ -1,7 +1,7 @@
 streamlit==1.28.1
 ultralytics==8.0.196
-opencv-python-headless==4.8.1.78  # ← HEADLESS версия!
+opencv-python-headless==4.8.1.78
 numpy==1.24.3
 gdown==4.7.1
 Pillow==10.1.0
-pyyaml==6.0.1  # Для YOLO
+pyyaml==6.0.1

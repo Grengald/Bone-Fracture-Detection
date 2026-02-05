@@ -1,12 +1,10 @@
 # app.py
 import os
-os.environ["DISPLAY"] = ""          # отключаем попытки OpenCV использовать GUI
-os.environ["ULTRALYTICS_NO_GUI"] = "1"
+os.environ["ULTRALYTICS_NO_GUI"] = "1"           # отключаем GUI OpenCV
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
 
 import streamlit as st
-from ultralytics import YOLO
 import numpy as np
 import cv2
 from PIL import Image
@@ -21,20 +19,29 @@ CONF_THRESHOLD = 0.5
 WEIGHTS_PATH = Path("best.pt")
 GDRIVE_URL = "https://drive.google.com/uc?id=1jAPQ-Id_ZDvmFuI6F9jn1ZGHa8wUQbOC"
 
-# ----------------- ФУНКЦИИ -----------------
+# ----------------- МОДЕЛЬ -----------------
+model = None  # глобальная переменная для ленивой загрузки
+
 @st.cache_resource
 def download_model():
+    """Скачиваем веса YOLO с Google Drive, если их нет"""
     if not WEIGHTS_PATH.exists():
         st.info("⬇️ Downloading YOLO weights from Google Drive...")
         gdown.download(GDRIVE_URL, str(WEIGHTS_PATH), quiet=False)
     st.success("✅ YOLO weights ready")
+    from ultralytics import YOLO
     return YOLO(str(WEIGHTS_PATH))
 
-@st.cache_resource
-def load_model():
-    return download_model()
+def get_model():
+    """Ленивая загрузка модели, чтобы Streamlit стартовал сразу"""
+    global model
+    if model is None:
+        model = download_model()
+    return model
 
+# ----------------- ФУНКЦИИ -----------------
 def predict_fracture(img):
+    model = get_model()
     results = model(img)
     boxes = results[0].boxes
 
@@ -47,9 +54,6 @@ def predict_fracture(img):
 
     annotated = results[0].plot()
     return fracture, confidence, annotated
-
-# ----------------- ЗАГРУЗКА МОДЕЛИ -----------------
-model = load_model()
 
 # ----------------- ЗАГРУЗКА ИЗОБРАЖЕНИЯ -----------------
 uploaded_file = st.file_uploader("Upload X-ray image", type=["jpg", "png", "jpeg"])

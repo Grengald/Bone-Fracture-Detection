@@ -9,4 +9,4 @@ torch
 opencv-python-headless
 pillow
 numpy
-requests
+gdown

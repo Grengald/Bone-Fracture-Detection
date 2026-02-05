@@ -3,11 +3,11 @@ import os
 os.environ["ULTRALYTICS_NO_GUI"] = "1"  # отключаем GUI OpenCV
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
+
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 import cv2
-from PIL import Image
 from pathlib import Path
 import gdown
 
@@ -47,13 +47,16 @@ def predict_fracture(img):
 
         # Фильтруем боксы ниже порога
         filtered_boxes = [b for b in boxes if float(b.conf[0]) >= CONF_THRESHOLD]
-        results[0].boxes = type(boxes)(filtered_boxes)  # создаем новый объект boxes с фильтром
+        if filtered_boxes:
+            results[0].boxes = type(boxes)(filtered_boxes)
+        else:
+            # Если нет боксов выше порога, оставляем пустой список
+            results[0].boxes = type(boxes)([])
     else:
         results[0].boxes = type(boxes)([])  # если боксов нет, пустой список
 
     annotated = results[0].plot()
     return fracture, confidence, annotated
-
 
 # ----------------- ЗАГРУЗКА МОДЕЛИ -----------------
 model = load_model()
@@ -77,7 +80,3 @@ if uploaded_file is not None:
             st.success(f"No fracture detected (confidence: {confidence:.2f})")
 
         st.image(annotated[..., ::-1], caption="Detection Result", use_column_width=True)
-
-
-
-

@@ -1,3 +1,12 @@
 streamlit
 requests
 Pillow
+fastapi
+uvicorn
+python-multipart
+ultralytics
+torch
+opencv-python-headless
+pillow
+numpy
+requests

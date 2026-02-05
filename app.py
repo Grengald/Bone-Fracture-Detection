@@ -1,8 +1,9 @@
 # app.py
-import streamlit as st
 import os
+os.environ["ULTRALYTICS_NO_GUI"] = "1"  # отключаем GUI OpenCV
 os.environ["OPENCV_VIDEOIO_PRIORITY_MSMF"] = "0"
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "0"
+import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 import cv2
@@ -67,5 +68,6 @@ if uploaded_file is not None:
             st.success(f"No fracture detected (confidence: {confidence:.2f})")
 
         st.image(annotated[..., ::-1], caption="Detection Result", use_column_width=True)
+
 
 

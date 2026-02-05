@@ -1,48 +1,66 @@
+# app.py
 import streamlit as st
-import requests
-import base64
+from ultralytics import YOLO
+import numpy as np
+import cv2
 from PIL import Image
-import io
+from pathlib import Path
+import gdown
 
+# ----------------- НАСТРОЙКИ -----------------
 st.set_page_config(page_title="Bone Fracture Detection", layout="centered")
-
 st.title("🦴 Bone Fracture Detection")
 
-uploaded_file = st.file_uploader(
-    "Upload X-ray image",
-    type=["jpg", "png", "jpeg"]
-)
+CONF_THRESHOLD = 0.5
+WEIGHTS_PATH = Path("best.pt")
+GDRIVE_URL = "https://drive.google.com/uc?id=1jAPQ-Id_ZDvmFuI6F9jn1ZGHa8wUQbOC")
+
+# ----------------- ФУНКЦИИ -----------------
+@st.cache_resource
+def download_model():
+    if not WEIGHTS_PATH.exists():
+        st.info("⬇️ Downloading YOLO weights from Google Drive...")
+        gdown.download(GDRIVE_URL, str(WEIGHTS_PATH), quiet=False)
+    st.success("✅ YOLO weights ready")
+    return YOLO(str(WEIGHTS_PATH))
+
+@st.cache_resource
+def load_model():
+    return download_model()
+
+def predict_fracture(img):
+    results = model(img)
+    boxes = results[0].boxes
+
+    fracture = False
+    confidence = 0.0
+
+    if boxes is not None and len(boxes) > 0:
+        confidence = float(boxes.conf.max())
+        fracture = confidence >= CONF_THRESHOLD
+
+    annotated = results[0].plot()
+    return fracture, confidence, annotated
+
+# ----------------- ЗАГРУЗКА МОДЕЛИ -----------------
+model = load_model()
+
+# ----------------- ЗАГРУЗКА ИЗОБРАЖЕНИЯ -----------------
+uploaded_file = st.file_uploader("Upload X-ray image", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Original Image", use_container_width=True)
+    # Конвертируем в OpenCV формат
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    st.image(img[..., ::-1], caption="Original Image", use_column_width=True)
 
     if st.button("Analyze"):
+        fracture, confidence, annotated = predict_fracture(img)
 
-        files = {"file": uploaded_file.getvalue()}
-
-        response = requests.post(
-            "https://bone-fracture-detection-2.onrender.com",
-            files=files
-        )
-
-        if response.status_code == 200:
-            data = response.json()
-
-            fracture = data["fracture"]
-            confidence = data["confidence"]
-
-            st.subheader("Result")
-
-            if fracture:
-                st.error(f"Fracture detected (confidence: {confidence:.2f})")
-            else:
-                st.success(f"No fracture detected (confidence: {confidence:.2f})")
-
-            img_bytes = base64.b64decode(data["image"])
-            img = Image.open(io.BytesIO(img_bytes))
-
-            st.image(img, caption="Detection Result", use_container_width=True)
+        st.subheader("Result")
+        if fracture:
+            st.error(f"Fracture detected (confidence: {confidence:.2f})")
         else:
-            st.warning("Backend error")
+            st.success(f"No fracture detected (confidence: {confidence:.2f})")
 
-
+        st.image(annotated[..., ::-1], caption="Detection Result", use_column_width=True)

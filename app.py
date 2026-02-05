@@ -40,11 +40,20 @@ def predict_fracture(img):
     confidence = 0.0
 
     if boxes is not None and len(boxes) > 0:
-        confidence = float(boxes.conf.max())
-        fracture = confidence >= CONF_THRESHOLD
+        # Получаем максимальную уверенность по всем боксам
+        max_conf = float(boxes.conf.max())
+        confidence = max_conf
+        fracture = max_conf >= CONF_THRESHOLD
+
+        # Фильтруем боксы ниже порога
+        filtered_boxes = [b for b in boxes if float(b.conf[0]) >= CONF_THRESHOLD]
+        results[0].boxes = type(boxes)(filtered_boxes)  # создаем новый объект boxes с фильтром
+    else:
+        results[0].boxes = type(boxes)([])  # если боксов нет, пустой список
 
     annotated = results[0].plot()
     return fracture, confidence, annotated
+
 
 # ----------------- ЗАГРУЗКА МОДЕЛИ -----------------
 model = load_model()
@@ -68,6 +77,7 @@ if uploaded_file is not None:
             st.success(f"No fracture detected (confidence: {confidence:.2f})")
 
         st.image(annotated[..., ::-1], caption="Detection Result", use_column_width=True)
+
 
 
 

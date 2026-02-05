@@ -13,7 +13,7 @@ st.title("🦴 Bone Fracture Detection")
 
 CONF_THRESHOLD = 0.5
 WEIGHTS_PATH = Path("best.pt")
-GDRIVE_URL = "https://drive.google.com/uc?id=1jAPQ-Id_ZDvmFuI6F9jn1ZGHa8wUQbOC")
+GDRIVE_URL = "https://drive.google.com/uc?id=1jAPQ-Id_ZDvmFuI6F9jn1ZGHa8wUQbOC"
 
 # ----------------- ФУНКЦИИ -----------------
 @st.cache_resource
@@ -64,3 +64,4 @@ if uploaded_file is not None:
             st.success(f"No fracture detected (confidence: {confidence:.2f})")
 
         st.image(annotated[..., ::-1], caption="Detection Result", use_column_width=True)
+

@@ -1,8 +1,8 @@
 # Bone-Fracture-Detection
 
-Проект для детекции перкломов на фото.  
+Проект для детекции переломов на фото.  
 В проекте есть:
-- **YOLO-модели** (YOLO8s)
+- **YOLO-модель** (YOLO8s)
 - **Backend + Frontend**: Streamlit
 
 ---
